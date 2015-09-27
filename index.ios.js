@@ -18,7 +18,7 @@ var Button = require('react-native-button');
 window.navigator.userAgent = "react-native";
 var io = require('socket.io-client/socket.io');
 
-var socket = io.connect('http://54.255.180.125');
+var socket = io.connect('http://react-native-webrtc.herokuapp.com');
 
 var WebRTC = require('react-native-webrtc');
 var {
@@ -32,14 +32,11 @@ var {
 var configuration = {"iceServers": [{"url": "stun:stun.l.google.com:19302"}]};
 
 var pcPeers = {};
-// var selfView = document.getElementById("selfView");
-// var remoteViewContainer = document.getElementById("remoteViewContainer");
 var localStream;
 
 function getLocalStream() {
   navigator.getUserMedia({ "audio": true, "video": true }, function (stream) {
     localStream = stream;
-    // selfView.src = URL.createObjectURL(stream);
     container.setState({selfViewSrc: stream.objectId});
     container.setState({status: 'ready', info: 'Please enter or create room ID'});
   }, logError);
@@ -93,11 +90,6 @@ function createPC(socketId, isOffer) {
   pc.onaddstream = function (event) {
     console.log('onaddstream', event);
     container.setState({info: 'One peer join!'});
-    // var element = document.createElement('video');
-    // element.id = "remoteView" + socketId;
-    // element.autoplay = 'autoplay';
-    // element.src = URL.createObjectURL(event.stream);
-    // remoteViewContainer.appendChild(element);
 
     var remoteList = container.state.remoteList;
     remoteList[socketId] = event.stream.objectId;
@@ -145,8 +137,6 @@ function leave(socketId) {
   delete remoteList[socketId]
   container.setState({ remoteList: remoteList });
   container.setState({info: 'One peer leave!'});
-  // var video = document.getElementById("remoteView" + socketId);
-  // if (video) video.remove();
 }
 
 socket.on('exchange', function(data){

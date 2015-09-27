@@ -1358,7 +1358,7 @@ throw new TypeError(
 
 var index=findIndex.call(this,predicate,context);
 return index === -1?undefined:this[index];}});}})();
-__d('RCTWebRTCDemo/index.ios.js',["react-native/Libraries/react-native/react-native.js","react-native-button/Button.js","react-native-webrtc/index.ios.js","socket.io-client/socket.io.js"],function(global, require, module, exports) {  'use strict';
+__d('RCTWebRTCDemo/index.ios.js',["react-native/Libraries/react-native/react-native.js","react-native-button/Button.js","socket.io-client/socket.io.js","react-native-webrtc/index.ios.js"],function(global, require, module, exports) {  'use strict';
 
 
 
@@ -1378,7 +1378,7 @@ var Button=require('react-native-button/Button.js');
 window.navigator.userAgent = "react-native";
 var io=require('socket.io-client/socket.io.js');
 
-var socket=io.connect('http://54.255.180.125');
+var socket=io.connect('http://react-native-webrtc.herokuapp.com');
 
 var WebRTC=require('react-native-webrtc/index.ios.js');var 
 
@@ -1392,14 +1392,11 @@ WebRTC.RTCPeerConnection;var RTCMediaStream=WebRTC.RTCMediaStream;var RTCIceCand
 var configuration={"iceServers":[{"url":"stun:stun.l.google.com:19302"}]};
 
 var pcPeers={};
-
-
 var localStream;
 
 function getLocalStream(){
 navigator.getUserMedia({"audio":true,"video":true},function(stream){
 localStream = stream;
-
 container.setState({selfViewSrc:stream.objectId});
 container.setState({status:'ready',info:'Please enter or create room ID'});},
 logError);}
@@ -1454,11 +1451,6 @@ pc.onaddstream = function(event){
 console.log('onaddstream',event);
 container.setState({info:'One peer join!'});
 
-
-
-
-
-
 var remoteList=container.state.remoteList;
 remoteList[socketId] = event.stream.objectId;
 container.setState({remoteList:remoteList});};
@@ -1505,8 +1497,6 @@ var remoteList=container.state.remoteList;
 delete remoteList[socketId];
 container.setState({remoteList:remoteList});
 container.setState({info:'One peer leave!'});}
-
-
 
 
 socket.on('exchange',function(data){
@@ -5315,7 +5305,7 @@ NodeHandle.injection.injectImplementation(UniversalWorkerNodeHandle);}
 module.exports = {
 inject:inject};
 });
-__d('InitializeJavaScriptAppEngine',["RCTDebugComponentOwnership","RCTDeviceEventEmitter","PerformanceLogger","ExceptionsManager","ErrorUtils","ExceptionsManager","Platform","checkFlowAtRuntime","JSTimers","NativeModules","Promise","XMLHttpRequest","FormData","fetch","Geolocation","WebSocket","BridgeProfiling","regenerator/runtime.js"],function(global, require, module, exports) {  require(
+__d('InitializeJavaScriptAppEngine',["RCTDebugComponentOwnership","RCTDeviceEventEmitter","PerformanceLogger","regenerator/runtime.js","ExceptionsManager","ErrorUtils","ExceptionsManager","Platform","checkFlowAtRuntime","JSTimers","NativeModules","Promise","XMLHttpRequest","FormData","fetch","Geolocation","WebSocket","BridgeProfiling"],function(global, require, module, exports) {  require(
 
 
 
@@ -28716,7 +28706,7 @@ this.emit(arg.eventType,arg.data,arg.didEmitCallback);}}}]);return NavigationEve
 
 module.exports = NavigationEventEmitter;
 });
-__d('NavigatorBreadcrumbNavigationBar',["NavigatorBreadcrumbNavigationBarStyles","NavigatorNavigationBarStyles","React","StaticContainer.react","StyleSheet","View","invariant","immutable/dist/immutable.js"],function(global, require, module, exports) {  'use strict';
+__d('NavigatorBreadcrumbNavigationBar',["NavigatorBreadcrumbNavigationBarStyles","NavigatorNavigationBarStyles","React","StaticContainer.react","StyleSheet","View","immutable/dist/immutable.js","invariant"],function(global, require, module, exports) {  'use strict';
 
 
 
@@ -58985,7 +58975,7 @@ return array;}},
 {}]},{},[1])(
 1);});
 });
-__d('react-native-webrtc/index.ios.js',["react-native/Libraries/react-native/react-native.js","react-native-webrtc/getUserMedia.js","react-native-webrtc/RTCPeerConnection.ios.js","react-native-webrtc/RTCMediaStream.ios.js","react-native-webrtc/RTCIceCandidate.js","react-native-webrtc/RTCSessionDescription.js","react-native-webrtc/RTCView.ios.js"],function(global, require, module, exports) {  'use strict';
+__d('react-native-webrtc/index.ios.js',["react-native/Libraries/react-native/react-native.js","react-native-webrtc/getUserMedia.js","react-native-webrtc/RTCMediaStream.ios.js","react-native-webrtc/RTCPeerConnection.ios.js","react-native-webrtc/RTCIceCandidate.js","react-native-webrtc/RTCSessionDescription.js","react-native-webrtc/RTCView.ios.js"],function(global, require, module, exports) {  'use strict';
 var WebRTCManager=require('react-native/Libraries/react-native/react-native.js').NativeModules.WebRTCManager;
 
 require('react-native-webrtc/getUserMedia.js');

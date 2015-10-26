@@ -1,5 +1,5 @@
 # RCTWebRTCDemo
-Demo fo https://github.com/oney/react-native-webrtc
+Demo for https://github.com/oney/react-native-webrtc
 ## Usage
 Clone the repository, run `npm install`, and run the project.   
 You can run the app in other iPhone, or open http://react-native-webrtc.herokuapp.com.   

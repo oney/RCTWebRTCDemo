@@ -2,7 +2,6 @@
  * Sample React Native App
  * https://github.com/facebook/react-native
  */
-
 'use strict';
 
 var React = require('react-native');
@@ -10,10 +9,10 @@ var {
   AppRegistry,
   StyleSheet,
   Text,
+  TouchableHighlight,
   View,
   TextInput,
 } = React;
-var Button = require('react-native-button');
 
 window.navigator.userAgent = "react-native";
 var io = require('socket.io-client/socket.io');
@@ -35,16 +34,22 @@ var pcPeers = {};
 var localStream;
 
 function getLocalStream() {
+  console.log('getLocalStream');
   navigator.getUserMedia({ "audio": true, "video": true }, function (stream) {
     localStream = stream;
-    container.setState({selfViewSrc: stream.objectId});
+    console.log('werjqwilrjqwlirjlwiqr', stream.toURL());
+    container.setState({selfViewSrc: stream.toURL()});
     container.setState({status: 'ready', info: 'Please enter or create room ID'});
+    // setTimeout(function() {
+    //   join('ggoos');
+    // }, 1000);
   }, logError);
 }
 
 function join(roomID) {
   socket.emit('join', roomID, function(socketIds){
     console.log('join', socketIds);
+    // createPC('wererw', true);
     for (var i in socketIds) {
       var socketId = socketIds[i];
       createPC(socketId, true);
@@ -57,7 +62,7 @@ function createPC(socketId, isOffer) {
   pcPeers[socketId] = pc;
 
   pc.onicecandidate = function (event) {
-    console.log('onicecandidate', event);
+    console.log('onicecandidate', event.candidate);
     if (event.candidate) {
       socket.emit('exchange', {'to': socketId, 'candidate': event.candidate });
     }
@@ -81,18 +86,18 @@ function createPC(socketId, isOffer) {
   }
 
   pc.oniceconnectionstatechange = function(event) {
-    console.log('oniceconnectionstatechange', event);
+    console.log('oniceconnectionstatechange', event.target.iceConnectionState);
   };
   pc.onsignalingstatechange = function(event) {
-    console.log('onsignalingstatechange', event);
+    console.log('onsignalingstatechange', event.target.signalingState);
   };
 
   pc.onaddstream = function (event) {
-    console.log('onaddstream', event);
+    console.log('onaddstream', event.stream);
     container.setState({info: 'One peer join!'});
 
     var remoteList = container.state.remoteList;
-    remoteList[socketId] = event.stream.objectId;
+    remoteList[socketId] = event.stream.toURL();
     container.setState({ remoteList: remoteList });
   };
   pc.addStream(localStream);
@@ -171,8 +176,10 @@ var RCTWebRTCDemo = React.createClass({
     return {info: 'Initializing', status: 'init', roomID: "", selfViewSrc: null, remoteList: {}};
   },
   componentDidMount: function() {
-    console.log('componentDidMountwqer');
     container = this;
+    // setTimeout(() => {
+    //   getLocalStream();
+    // }, 1000);
   },
   _press(event) {
     this.refs.roomID.blur();
@@ -194,17 +201,16 @@ var RCTWebRTCDemo = React.createClass({
               onChangeText={(text) => this.setState({roomID: text})}
               value={this.state.roomID}
             />
-            <Button
-              style={{borderWidth: 1, borderColor: 'blue'}}
+            <TouchableHighlight
               onPress={this._press}>
-              Enter room
-            </Button>
+              <Text>Enter room</Text>
+            </TouchableHighlight>
           </View>) : null
         }
-        <RTCView src={this.state.selfViewSrc} style={styles.selfView}/>
+        <RTCView streamURL={this.state.selfViewSrc} style={styles.selfView}/>
         {
           mapHash(this.state.remoteList, function(remote, index) {
-            return <RTCView key={index} src={remote} style={styles.remoteView}/>
+            return <RTCView key={index} streamURL={remote} style={styles.remoteView}/>
           })
         }
       </View>

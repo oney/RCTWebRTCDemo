@@ -11,6 +11,8 @@ import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
 
+import com.oney.WebRTCModule.WebRTCModulePackage;
+
 public class MainActivity extends Activity implements DefaultHardwareBackBtnHandler {
 
     private ReactInstanceManager mReactInstanceManager;
@@ -24,8 +26,9 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
         mReactInstanceManager = ReactInstanceManager.builder()
                 .setApplication(getApplication())
                 .setBundleAssetName("index.android.bundle")
-                .setJSMainModuleName("index.android")
+                .setJSMainModuleName("index")
                 .addPackage(new MainReactPackage())
+                .addPackage(new WebRTCModulePackage())
                 .setUseDeveloperSupport(BuildConfig.DEBUG)
                 .setInitialLifecycleState(LifecycleState.RESUMED)
                 .build();

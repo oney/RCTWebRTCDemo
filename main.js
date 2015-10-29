@@ -1,7 +1,3 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- */
 'use strict';
 
 var React = require('react-native');
@@ -25,7 +21,8 @@ var {
   RTCMediaStream,
   RTCIceCandidate,
   RTCSessionDescription,
-  RTCView
+  RTCView,
+  RTCSetting,
 } = WebRTC;
 
 var configuration = {"iceServers": [{"url": "stun:stun.l.google.com:19302"}]};
@@ -37,19 +34,14 @@ function getLocalStream() {
   console.log('getLocalStream');
   navigator.getUserMedia({ "audio": true, "video": true }, function (stream) {
     localStream = stream;
-    console.log('werjqwilrjqwlirjlwiqr', stream.toURL());
     container.setState({selfViewSrc: stream.toURL()});
     container.setState({status: 'ready', info: 'Please enter or create room ID'});
-    // setTimeout(function() {
-    //   join('ggoos');
-    // }, 1000);
   }, logError);
 }
 
 function join(roomID) {
   socket.emit('join', roomID, function(socketIds){
     console.log('join', socketIds);
-    // createPC('wererw', true);
     for (var i in socketIds) {
       var socketId = socketIds[i];
       createPC(socketId, true);
@@ -95,6 +87,7 @@ function createPC(socketId, isOffer) {
   pc.onaddstream = function (event) {
     console.log('onaddstream', event.stream);
     container.setState({info: 'One peer join!'});
+    peerConnected();
 
     var remoteList = container.state.remoteList;
     remoteList[socketId] = event.stream.toURL();
@@ -169,17 +162,20 @@ function mapHash(hash, func) {
   return array;
 }
 
+function peerConnected() {
+  RTCSetting.setAudioOutput('speaker');
+  RTCSetting.setKeepScreenOn(true);
+  RTCSetting.setProximityScreenOff(true);
+}
+
 var container;
 
 var RCTWebRTCDemo = React.createClass({
   getInitialState: function() {
-    return {info: 'Initializing', status: 'init', roomID: "", selfViewSrc: null, remoteList: {}};
+    return {info: 'Initializing', status: 'init', roomID: '', selfViewSrc: null, remoteList: {}};
   },
   componentDidMount: function() {
     container = this;
-    // setTimeout(() => {
-    //   getLocalStream();
-    // }, 1000);
   },
   _press(event) {
     this.refs.roomID.blur();
@@ -222,12 +218,10 @@ var styles = StyleSheet.create({
   selfView: {
     width: 100,
     height: 100,
-    backgroundColor: '#EF1414',
   },
   remoteView: {
     width: 100,
     height: 100,
-    backgroundColor: '#EF1414',
   },
   container: {
     flex: 1,

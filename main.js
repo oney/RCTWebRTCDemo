@@ -32,7 +32,11 @@ var localStream;
 
 function getLocalStream() {
   console.log('getLocalStream');
-  navigator.getUserMedia({ "audio": true, "video": true }, function (stream) {
+  navigator.getUserMedia({
+    "audio": true,
+    "video": true,
+    "videoType": "back" // optional, values is `back`, `front`
+  }, function (stream) {
     localStream = stream;
     container.setState({selfViewSrc: stream.toURL()});
     container.setState({status: 'ready', info: 'Please enter or create room ID'});

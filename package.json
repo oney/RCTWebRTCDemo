@@ -6,8 +6,8 @@
     "start": "node_modules/react-native/packager/packager.sh"
   },
   "dependencies": {
-    "react-native": "^0.13.0",
-    "react-native-webrtc": "0.2.3",
+    "react-native": "^0.17.0",
+    "react-native-webrtc": "0.2.6",
     "socket.io-client": "^1.3.7"
   }
 }

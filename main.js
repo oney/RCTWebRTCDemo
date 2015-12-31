@@ -30,16 +30,14 @@ var configuration = {"iceServers": [{"url": "stun:stun.l.google.com:19302"}]};
 var pcPeers = {};
 var localStream;
 
-function getLocalStream() {
+function getLocalStream(isFront, callback) {
   console.log('getLocalStream');
   navigator.getUserMedia({
     "audio": true,
     "video": true,
-    "videoType": "back" // optional, values is `back`, `front`
+    "videoType": (isFront ? "front" : "back") // optional, values is `back`, `front`
   }, function (stream) {
-    localStream = stream;
-    container.setState({selfViewSrc: stream.toURL()});
-    container.setState({status: 'ready', info: 'Please enter or create room ID'});
+    callback(stream);
   }, logError);
 }
 
@@ -150,7 +148,11 @@ socket.on('leave', function(socketId){
 
 socket.on('connect', function(data) {
   console.log('connect');
-  getLocalStream();
+  getLocalStream(true, function(stream) {
+    localStream = stream;
+    container.setState({selfViewSrc: stream.toURL()});
+    container.setState({status: 'ready', info: 'Please enter or create room ID'});
+  });
 });
 
 function logError(error) {
@@ -176,7 +178,14 @@ var container;
 
 var RCTWebRTCDemo = React.createClass({
   getInitialState: function() {
-    return {info: 'Initializing', status: 'init', roomID: '', selfViewSrc: null, remoteList: {}};
+    return {
+      info: 'Initializing',
+      status: 'init',
+      roomID: '',
+      isFront: true,
+      selfViewSrc: null,
+      remoteList: {}
+    };
   },
   componentDidMount: function() {
     container = this;
@@ -186,12 +195,42 @@ var RCTWebRTCDemo = React.createClass({
     this.setState({status: 'connect', info: 'Connecting'});
     join(this.state.roomID);
   },
+  _switchVideoType() {
+    var isFront = !this.state.isFront;
+    this.setState({isFront});
+    getLocalStream(isFront, function(stream) {
+      if (localStream) {
+        for (var id in pcPeers) {
+          var pc = pcPeers[id];
+          pc && pc.removeStream(localStream);
+        }
+        localStream.release();
+      }
+      localStream = stream;
+      container.setState({selfViewSrc: stream.toURL()});
+
+      for (var id in pcPeers) {
+        var pc = pcPeers[id];
+        pc && pc.addStream(localStream);
+      }
+    });
+  },
   render: function() {
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>
           {this.state.info}
         </Text>
+        <View style={{flexDirection: 'row'}}>
+          <Text>
+            {this.state.isFront ? "Use front camera" : "Use back camera"}
+          </Text>
+          <TouchableHighlight
+            style={{borderWidth: 1, borderColor: 'black'}}
+            onPress={this._switchVideoType}>
+            <Text>Switch camera</Text>
+          </TouchableHighlight>
+        </View>
         { this.state.status == 'ready' ?
           (<View>
             <TextInput

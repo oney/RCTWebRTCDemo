@@ -48,6 +48,15 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
     }
 
     @Override
+    public void onBackPressed() {
+      if (mReactInstanceManager != null) {
+        mReactInstanceManager.onBackPressed();
+      } else {
+        super.onBackPressed();
+      }
+    }
+
+    @Override
     public void invokeDefaultOnBackPressed() {
       super.onBackPressed();
     }
@@ -66,7 +75,7 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
         super.onResume();
 
         if (mReactInstanceManager != null) {
-            mReactInstanceManager.onResume(this);
+            mReactInstanceManager.onResume(this, this);
         }
     }
 }

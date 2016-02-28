@@ -10,7 +10,9 @@ var {
   TextInput,
 } = React;
 
-window.navigator.userAgent = "react-native";
+if (!window.navigator.userAgent) {
+  window.navigator.userAgent = "react-native";
+}
 var io = require('socket.io-client/socket.io');
 
 var socket = io.connect('http://react-native-webrtc.herokuapp.com');
@@ -259,12 +261,12 @@ var RCTWebRTCDemo = React.createClass({
 
 var styles = StyleSheet.create({
   selfView: {
-    width: 100,
-    height: 100,
+    width: 200,
+    height: 150,
   },
   remoteView: {
-    width: 100,
-    height: 100,
+    width: 200,
+    height: 150,
   },
   container: {
     flex: 1,

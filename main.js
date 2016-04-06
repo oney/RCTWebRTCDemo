@@ -15,7 +15,7 @@ if (!window.navigator.userAgent) {
 }
 var io = require('socket.io-client/socket.io');
 
-var socket = io.connect('http://react-native-webrtc.herokuapp.com');
+var socket = io.connect('http://react-native-webrtc.herokuapp.com', {transports: ['websocket']});
 
 var WebRTC = require('react-native-webrtc');
 var {
@@ -25,6 +25,8 @@ var {
   RTCSessionDescription,
   RTCView,
   RTCSetting,
+  MediaStreamTrack,
+  getUserMedia,
 } = WebRTC;
 
 var configuration = {"iceServers": [{"url": "stun:stun.l.google.com:19302"}]};
@@ -33,14 +35,25 @@ var pcPeers = {};
 var localStream;
 
 function getLocalStream(isFront, callback) {
-  console.log('getLocalStream');
-  navigator.getUserMedia({
-    "audio": true,
-    "video": true,
-    "videoType": (isFront ? "front" : "back") // optional, values is `back`, `front`
-  }, function (stream) {
-    callback(stream);
-  }, logError);
+  MediaStreamTrack.getSources(sourceInfos => {
+    console.log(sourceInfos);
+    var videoSourceId;
+    for (var i = 0; i < sourceInfos.length; i++) {
+      var sourceInfo = sourceInfos[i];
+      if(sourceInfo.kind == "video" && sourceInfo.facing == (isFront ? "front" : "back")) {
+        videoSourceId = sourceInfo.id;
+      }
+    }
+    getUserMedia({
+      "audio": true,
+      "video": {
+        optional: [{sourceId: videoSourceId}]
+      }
+    }, function (stream) {
+      console.log('dddd', stream);
+      callback(stream);
+    }, logError);
+  });
 }
 
 function join(roomID) {
@@ -83,6 +96,11 @@ function createPC(socketId, isOffer) {
 
   pc.oniceconnectionstatechange = function(event) {
     console.log('oniceconnectionstatechange', event.target.iceConnectionState);
+    if (event.target.iceConnectionState === 'completed') {
+      setTimeout(() => {
+        getStats();
+      }, 1000);
+    }
   };
   pc.onsignalingstatechange = function(event) {
     console.log('onsignalingstatechange', event.target.signalingState);
@@ -97,6 +115,10 @@ function createPC(socketId, isOffer) {
     remoteList[socketId] = event.stream.toURL();
     container.setState({ remoteList: remoteList });
   };
+  pc.onremovestream = function (event) {
+    console.log('onremovestream', event.stream);
+  };
+
   pc.addStream(localStream);
   return pc;
 }
@@ -174,6 +196,17 @@ function peerConnected() {
   RTCSetting.setAudioOutput('speaker');
   RTCSetting.setKeepScreenOn(true);
   RTCSetting.setProximityScreenOff(true);
+}
+
+function getStats() {
+  var pc = pcPeers[Object.keys(pcPeers)[0]];
+  if (pc.getRemoteStreams()[0] && pc.getRemoteStreams()[0].getAudioTracks()[0]) {
+    var track = pc.getRemoteStreams()[0].getAudioTracks()[0];
+    console.log('track', track);
+    pc.getStats(track, function(report) {
+      console.log('getStats report', report);
+    }, logError);
+  }
 }
 
 var container;

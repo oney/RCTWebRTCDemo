@@ -8,6 +8,7 @@ var {
   TouchableHighlight,
   View,
   TextInput,
+  ListView,
 } = React;
 
 if (!window.navigator.userAgent) {
@@ -101,6 +102,9 @@ function createPC(socketId, isOffer) {
         getStats();
       }, 1000);
     }
+    if (event.target.iceConnectionState === 'connected') {
+      createDataChannel();
+    }
   };
   pc.onsignalingstatechange = function(event) {
     console.log('onsignalingstatechange', event.target.signalingState);
@@ -120,6 +124,32 @@ function createPC(socketId, isOffer) {
   };
 
   pc.addStream(localStream);
+  function createDataChannel() {
+    if (pc.textDataChannel) {
+      return;
+    }
+    var dataChannel = pc.createDataChannel("text");
+
+    dataChannel.onerror = function (error) {
+      console.log("dataChannel.onerror", error);
+    };
+
+    dataChannel.onmessage = function (event) {
+      console.log("dataChannel.onmessage:", event.data);
+      container.receiveTextData({user: socketId, message: event.data});
+    };
+
+    dataChannel.onopen = function () {
+      console.log('dataChannel.onopen');
+      container.setState({textRoomConnected: true});
+    };
+
+    dataChannel.onclose = function () {
+      console.log("dataChannel.onclose");
+    };
+
+    pc.textDataChannel = dataChannel;
+  }
   return pc;
 }
 
@@ -213,13 +243,17 @@ var container;
 
 var RCTWebRTCDemo = React.createClass({
   getInitialState: function() {
+    this.ds = new ListView.DataSource({rowHasChanged: (r1, r2) => true});
     return {
       info: 'Initializing',
       status: 'init',
       roomID: '',
       isFront: true,
       selfViewSrc: null,
-      remoteList: {}
+      remoteList: {},
+      textRoomConnected: false,
+      textRoomData: [],
+      textRoomValue: '',
     };
   },
   componentDidMount: function() {
@@ -250,12 +284,46 @@ var RCTWebRTCDemo = React.createClass({
       }
     });
   },
-  render: function() {
+  receiveTextData(data) {
+    var textRoomData = this.state.textRoomData.slice();
+    textRoomData.push(data);
+    this.setState({textRoomData, textRoomValue: ''});
+  },
+  _textRoomPress() {
+    var textRoomData = this.state.textRoomData.slice();
+    textRoomData.push({user: 'Me', message: this.state.textRoomValue});
+    for (var key in pcPeers) {
+      var pc = pcPeers[key];
+      pc.textDataChannel.send(this.state.textRoomValue);
+    }
+    this.setState({textRoomData, textRoomValue: ''});
+  },
+  _renderTextRoom() {
+    return (
+      <View style={styles.listViewContainer}>
+        <ListView
+          dataSource={this.ds.cloneWithRows(this.state.textRoomData)}
+          renderRow={rowData => <Text>{`${rowData.user}: ${rowData.message}`}</Text>}
+          />
+        <TextInput
+          style={{width: 200, height: 30, borderColor: 'gray', borderWidth: 1}}
+          onChangeText={value => this.setState({textRoomValue: value})}
+          value={this.state.textRoomValue}
+        />
+        <TouchableHighlight
+          onPress={this._textRoomPress}>
+          <Text>Send</Text>
+        </TouchableHighlight>
+      </View>
+    );
+  },
+  render() {
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>
           {this.state.info}
         </Text>
+        {this.state.textRoomConnected && this._renderTextRoom()}
         <View style={{flexDirection: 'row'}}>
           <Text>
             {this.state.isFront ? "Use front camera" : "Use back camera"}
@@ -304,13 +372,15 @@ var styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
   welcome: {
     fontSize: 20,
     textAlign: 'center',
     margin: 10,
+  },
+  listViewContainer: {
+    height: 150,
   },
 });
 

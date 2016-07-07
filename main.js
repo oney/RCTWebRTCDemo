@@ -25,7 +25,6 @@ var {
   RTCIceCandidate,
   RTCSessionDescription,
   RTCView,
-  RTCSetting,
   MediaStreamTrack,
   getUserMedia,
 } = WebRTC;
@@ -113,7 +112,6 @@ function createPC(socketId, isOffer) {
   pc.onaddstream = function (event) {
     console.log('onaddstream', event.stream);
     container.setState({info: 'One peer join!'});
-    peerConnected();
 
     var remoteList = container.state.remoteList;
     remoteList[socketId] = event.stream.toURL();
@@ -222,12 +220,6 @@ function mapHash(hash, func) {
   return array;
 }
 
-function peerConnected() {
-  RTCSetting.setAudioOutput('speaker');
-  RTCSetting.setKeepScreenOn(true);
-  RTCSetting.setProximityScreenOff(true);
-}
-
 function getStats() {
   var pc = pcPeers[Object.keys(pcPeers)[0]];
   if (pc.getRemoteStreams()[0] && pc.getRemoteStreams()[0].getAudioTracks()[0]) {
@@ -290,6 +282,9 @@ var RCTWebRTCDemo = React.createClass({
     this.setState({textRoomData, textRoomValue: ''});
   },
   _textRoomPress() {
+    if (!this.state.textRoomValue) {
+      return
+    }
     var textRoomData = this.state.textRoomData.slice();
     textRoomData.push({user: 'Me', message: this.state.textRoomValue});
     for (var key in pcPeers) {

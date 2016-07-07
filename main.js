@@ -1,7 +1,7 @@
 'use strict';
 
-var React = require('react-native');
-var {
+import React, { Component } from 'react';
+import {
   AppRegistry,
   StyleSheet,
   Text,
@@ -9,17 +9,13 @@ var {
   View,
   TextInput,
   ListView,
-} = React;
+} from 'react-native';
 
-if (!window.navigator.userAgent) {
-  window.navigator.userAgent = "react-native";
-}
-var io = require('socket.io-client/socket.io');
+import io from 'socket.io-client/socket.io';
 
-var socket = io.connect('http://react-native-webrtc.herokuapp.com', {transports: ['websocket']});
+const socket = io.connect('https://react-native-webrtc.herokuapp.com', {transports: ['websocket']});
 
-var WebRTC = require('react-native-webrtc');
-var {
+import {
   RTCPeerConnection,
   RTCMediaStream,
   RTCIceCandidate,
@@ -27,19 +23,19 @@ var {
   RTCView,
   MediaStreamTrack,
   getUserMedia,
-} = WebRTC;
+} from 'react-native-webrtc';
 
-var configuration = {"iceServers": [{"url": "stun:stun.l.google.com:19302"}]};
+const configuration = {"iceServers": [{"url": "stun:stun.l.google.com:19302"}]};
 
-var pcPeers = {};
-var localStream;
+const pcPeers = {};
+let localStream;
 
 function getLocalStream(isFront, callback) {
   MediaStreamTrack.getSources(sourceInfos => {
     console.log(sourceInfos);
-    var videoSourceId;
-    for (var i = 0; i < sourceInfos.length; i++) {
-      var sourceInfo = sourceInfos[i];
+    let videoSourceId;
+    for (const i = 0; i < sourceInfos.length; i++) {
+      const sourceInfo = sourceInfos[i];
       if(sourceInfo.kind == "video" && sourceInfo.facing == (isFront ? "front" : "back")) {
         videoSourceId = sourceInfo.id;
       }
@@ -59,15 +55,15 @@ function getLocalStream(isFront, callback) {
 function join(roomID) {
   socket.emit('join', roomID, function(socketIds){
     console.log('join', socketIds);
-    for (var i in socketIds) {
-      var socketId = socketIds[i];
+    for (const i in socketIds) {
+      const socketId = socketIds[i];
       createPC(socketId, true);
     }
   });
 }
 
 function createPC(socketId, isOffer) {
-  var pc = new RTCPeerConnection(configuration);
+  const pc = new RTCPeerConnection(configuration);
   pcPeers[socketId] = pc;
 
   pc.onicecandidate = function (event) {
@@ -113,7 +109,7 @@ function createPC(socketId, isOffer) {
     console.log('onaddstream', event.stream);
     container.setState({info: 'One peer join!'});
 
-    var remoteList = container.state.remoteList;
+    const remoteList = container.state.remoteList;
     remoteList[socketId] = event.stream.toURL();
     container.setState({ remoteList: remoteList });
   };
@@ -126,7 +122,7 @@ function createPC(socketId, isOffer) {
     if (pc.textDataChannel) {
       return;
     }
-    var dataChannel = pc.createDataChannel("text");
+    const dataChannel = pc.createDataChannel("text");
 
     dataChannel.onerror = function (error) {
       console.log("dataChannel.onerror", error);
@@ -152,8 +148,8 @@ function createPC(socketId, isOffer) {
 }
 
 function exchange(data) {
-  var fromId = data.from;
-  var pc;
+  const fromId = data.from;
+  let pc;
   if (fromId in pcPeers) {
     pc = pcPeers[fromId];
   } else {
@@ -180,12 +176,12 @@ function exchange(data) {
 
 function leave(socketId) {
   console.log('leave', socketId);
-  var pc = pcPeers[socketId];
-  var viewIndex = pc.viewIndex;
+  const pc = pcPeers[socketId];
+  const viewIndex = pc.viewIndex;
   pc.close();
   delete pcPeers[socketId];
 
-  var remoteList = container.state.remoteList;
+  const remoteList = container.state.remoteList;
   delete remoteList[socketId]
   container.setState({ remoteList: remoteList });
   container.setState({info: 'One peer leave!'});
@@ -212,18 +208,18 @@ function logError(error) {
 }
 
 function mapHash(hash, func) {
-  var array = [];
-  for (var key in hash) {
-    var obj = hash[key];
+  const array = [];
+  for (const key in hash) {
+    const obj = hash[key];
     array.push(func(obj, key));
   }
   return array;
 }
 
 function getStats() {
-  var pc = pcPeers[Object.keys(pcPeers)[0]];
+  const pc = pcPeers[Object.keys(pcPeers)[0]];
   if (pc.getRemoteStreams()[0] && pc.getRemoteStreams()[0].getAudioTracks()[0]) {
-    var track = pc.getRemoteStreams()[0].getAudioTracks()[0];
+    const track = pc.getRemoteStreams()[0].getAudioTracks()[0];
     console.log('track', track);
     pc.getStats(track, function(report) {
       console.log('getStats report', report);
@@ -231,9 +227,9 @@ function getStats() {
   }
 }
 
-var container;
+let container;
 
-var RCTWebRTCDemo = React.createClass({
+const RCTWebRTCDemo = React.createClass({
   getInitialState: function() {
     this.ds = new ListView.DataSource({rowHasChanged: (r1, r2) => true});
     return {
@@ -257,12 +253,12 @@ var RCTWebRTCDemo = React.createClass({
     join(this.state.roomID);
   },
   _switchVideoType() {
-    var isFront = !this.state.isFront;
+    const isFront = !this.state.isFront;
     this.setState({isFront});
     getLocalStream(isFront, function(stream) {
       if (localStream) {
-        for (var id in pcPeers) {
-          var pc = pcPeers[id];
+        for (const id in pcPeers) {
+          const pc = pcPeers[id];
           pc && pc.removeStream(localStream);
         }
         localStream.release();
@@ -270,14 +266,14 @@ var RCTWebRTCDemo = React.createClass({
       localStream = stream;
       container.setState({selfViewSrc: stream.toURL()});
 
-      for (var id in pcPeers) {
-        var pc = pcPeers[id];
+      for (const id in pcPeers) {
+        const pc = pcPeers[id];
         pc && pc.addStream(localStream);
       }
     });
   },
   receiveTextData(data) {
-    var textRoomData = this.state.textRoomData.slice();
+    const textRoomData = this.state.textRoomData.slice();
     textRoomData.push(data);
     this.setState({textRoomData, textRoomValue: ''});
   },
@@ -285,10 +281,10 @@ var RCTWebRTCDemo = React.createClass({
     if (!this.state.textRoomValue) {
       return
     }
-    var textRoomData = this.state.textRoomData.slice();
+    const textRoomData = this.state.textRoomData.slice();
     textRoomData.push({user: 'Me', message: this.state.textRoomValue});
-    for (var key in pcPeers) {
-      var pc = pcPeers[key];
+    for (const key in pcPeers) {
+      const pc = pcPeers[key];
       pc.textDataChannel.send(this.state.textRoomValue);
     }
     this.setState({textRoomData, textRoomValue: ''});
@@ -355,7 +351,7 @@ var RCTWebRTCDemo = React.createClass({
   }
 });
 
-var styles = StyleSheet.create({
+const styles = StyleSheet.create({
   selfView: {
     width: 200,
     height: 150,

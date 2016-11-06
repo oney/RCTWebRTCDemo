@@ -48,7 +48,7 @@ function getLocalStream(isFront, callback) {
           minHeight: 300,
           minFrameRate: 30
         },
-        facingMode: 'user',
+        facingMode: (isFront ? "user" : "environment"),
         optional: [{ sourceId: sourceInfos.id }]
       }
     }, function (stream) {

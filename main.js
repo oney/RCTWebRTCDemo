@@ -49,7 +49,7 @@ function getLocalStream(isFront, callback) {
           minFrameRate: 30
         },
         facingMode: (isFront ? "user" : "environment"),
-        optional: [{ sourceId: sourceInfos.id }]
+        optional: [ (videoSourceId ? {sourceId: videoSourceId} : {})]
       }
     }, function (stream) {
       console.log('dddd', stream);

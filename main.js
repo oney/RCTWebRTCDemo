@@ -11,7 +11,7 @@ import {
   ListView,
 } from 'react-native';
 
-import io from 'socket.io-client/socket.io';
+import io from 'socket.io-client';
 
 const socket = io.connect('https://react-native-webrtc.herokuapp.com', {transports: ['websocket']});
 

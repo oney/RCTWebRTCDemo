@@ -243,10 +243,11 @@ function getStats() {
 
 let container;
 
-const RCTWebRTCDemo = React.createClass({
-  getInitialState: function() {
+class RCTWebRTCDemo extends React.Component {
+  constructor() {
+    super()
     this.ds = new ListView.DataSource({rowHasChanged: (r1, r2) => true});
-    return {
+    this.state = {
       info: 'Initializing',
       status: 'init',
       roomID: '',
@@ -257,15 +258,15 @@ const RCTWebRTCDemo = React.createClass({
       textRoomData: [],
       textRoomValue: '',
     };
-  },
-  componentDidMount: function() {
+  }
+  componentDidMount() {
     container = this;
-  },
+  }
   _press(event) {
-    this.refs.roomID.blur();
+    // deprecated API call: this.refs.roomID.blur();
     this.setState({status: 'connect', info: 'Connecting'});
     join(this.state.roomID);
-  },
+  }
   _switchVideoType() {
     const isFront = !this.state.isFront;
     this.setState({isFront});
@@ -285,12 +286,12 @@ const RCTWebRTCDemo = React.createClass({
         pc && pc.addStream(localStream);
       }
     });
-  },
+  }
   receiveTextData(data) {
     const textRoomData = this.state.textRoomData.slice();
     textRoomData.push(data);
     this.setState({textRoomData, textRoomValue: ''});
-  },
+  }
   _textRoomPress() {
     if (!this.state.textRoomValue) {
       return
@@ -302,7 +303,7 @@ const RCTWebRTCDemo = React.createClass({
       pc.textDataChannel.send(this.state.textRoomValue);
     }
     this.setState({textRoomData, textRoomValue: ''});
-  },
+  }
   _renderTextRoom() {
     return (
       <View style={styles.listViewContainer}>
@@ -321,7 +322,7 @@ const RCTWebRTCDemo = React.createClass({
         </TouchableHighlight>
       </View>
     );
-  },
+  }
   render() {
     return (
       <View style={styles.container}>
@@ -363,7 +364,7 @@ const RCTWebRTCDemo = React.createClass({
       </View>
     );
   }
-});
+}
 
 const styles = StyleSheet.create({
   selfView: {

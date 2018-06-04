@@ -303,7 +303,7 @@ class RCTWebRTCDemo extends React.Component {
       pc.textDataChannel.send(this.state.textRoomValue);
     }
     this.setState({textRoomData, textRoomValue: ''});
-  },
+  }
   _renderTextRoom() {
     return (
       <View style={styles.listViewContainer}>

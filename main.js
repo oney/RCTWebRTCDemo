@@ -41,7 +41,7 @@ function getLocalStream(isFront, callback) {
     MediaStreamTrack.getSources(sourceInfos => {
       console.log("sourceInfos: ", sourceInfos);
 
-      for (const i = 0; i < sourceInfos.length; i++) {
+      for (let i = 0; i < sourceInfos.length; i++) {
         const sourceInfo = sourceInfos[i];
         if(sourceInfo.kind == "video" && sourceInfo.facing == (isFront ? "front" : "back")) {
           videoSourceId = sourceInfo.id;
